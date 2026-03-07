@@ -32,7 +32,7 @@ const listingOptions: { value: ListingType; label: string; desc: string }[] = [
 ];
 
 const CreateListing = () => {
-  const { isConnected, addArtwork, wallet, token } = useApp();
+  const { isConnected, wallet, token } = useApp();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
@@ -82,62 +82,48 @@ const CreateListing = () => {
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
+      console.log(!token);
       e.preventDefault();
-      if (!wallet || !token) return;
+      if (!wallet) return;
       setSubmitting(true);
 
       try {
         const [coverUrl, unlockableUrl] = await Promise.all([
-          coverFile
-            ? uploadImage(coverFile)
-            : Promise.resolve(FALLBACK_COVER),
+          coverFile ? uploadImage(coverFile) : Promise.resolve(FALLBACK_COVER),
           unlockableFile
             ? uploadImage(unlockableFile)
             : Promise.resolve(FALLBACK_UNLOCKABLE),
         ]);
 
-        await uploadArtwork(
+        const response = await uploadArtwork(
           {
             title,
             description,
             artist_wallet: wallet,
             price: parseFloat(price) || 0,
+            currency,
             cover_image_url: coverUrl,
             listing_type: listingType,
             unlockable_content_url: unlockableUrl,
-            nft_id: null,
             is_listed: true,
-            current_owner_wallet: wallet,
+            current_owner: null,
+            collection_id: null,
+            cert_title: listingType === "physical_certificate" ? title : null,
+            cert_description:
+              listingType === "physical_certificate" ? description : null,
+            cert_artist: listingType === "physical_certificate" ? wallet : null,
+            cert_dimensions:
+              listingType === "physical_certificate" ? dimensions : null,
+            cert_medium: listingType === "physical_certificate" ? medium : null,
+            cert_year:
+              listingType === "physical_certificate"
+                ? parseInt(year) || new Date().getFullYear()
+                : null,
           },
           token,
         );
 
-        const id = addArtwork({
-          title,
-          description,
-          artist_wallet: wallet,
-          price: parseFloat(price) || 0,
-          currency,
-          cover_image_url: coverUrl,
-          listing_type: listingType,
-          unlockable_content_url: unlockableUrl,
-          nft_contract_address: isNFTType
-            ? `0x${Math.random().toString(16).slice(2, 42)}`
-            : null,
-          nft_token_id: isNFTType ? `${Date.now()}` : null,
-          ...(listingType === "physical_certificate" && {
-            certificate: {
-              title,
-              description,
-              artist: wallet,
-              dimensions,
-              medium,
-              year: parseInt(year) || new Date().getFullYear(),
-            },
-          }),
-        });
-
-        setSuccessId(id);
+        setSuccessId(response.data.artwork.id);
       } catch (err: any) {
         toast.error(err?.message || "Failed to create listing");
       } finally {
@@ -155,7 +141,7 @@ const CreateListing = () => {
       dimensions,
       medium,
       year,
-      addArtwork,
+
       isNFTType,
       wallet,
       token,
@@ -213,7 +199,9 @@ const CreateListing = () => {
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => handleImageSelect(e, setCoverPreview, setCoverFile)}
+              onChange={(e) =>
+                handleImageSelect(e, setCoverPreview, setCoverFile)
+              }
             />
             <button
               type="button"
@@ -251,7 +239,9 @@ const CreateListing = () => {
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => handleImageSelect(e, setUnlockablePreview, setUnlockableFile)}
+              onChange={(e) =>
+                handleImageSelect(e, setUnlockablePreview, setUnlockableFile)
+              }
             />
             <button
               type="button"

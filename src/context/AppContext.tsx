@@ -4,11 +4,14 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { toast } from "sonner";
+import Cookies from "js-cookie";
 import { Artwork, initialArtworks, SaleHistoryEntry } from "@/data/artworks";
+import { buyArtwork as buyArtworkApi } from "@/lib/api/artworks";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -62,6 +65,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUserState] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const isLoggingOut = useRef(false);
 
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
@@ -76,8 +80,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const logout = useCallback(() => {
+    isLoggingOut.current = true;
     setUserState(null);
     setToken(null);
+    Cookies.remove("jwt");
     disconnect();
   }, [disconnect]);
 
@@ -115,7 +121,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             banner_image: u.banner_image ?? null,
             badges: u.badges || [],
           });
-          setToken("");
+          setToken(Cookies.get("jwt") ?? "");
           toast.success("Welcome back! Already authenticated.", {
             id: toastId,
           });
@@ -192,6 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         badges: user_instance.badges || [],
       });
       setToken(jwt);
+      Cookies.set("jwt", jwt, { sameSite: "Lax" });
       toast.success("Connected successfully!", { id: toastId });
     } catch (error: any) {
       toast.error(
@@ -208,15 +215,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Auto-authenticate after wallet connects
   useEffect(() => {
-    if (isConnected && address && !user && !isAuthenticating) {
+    if (!isConnected) {
+      isLoggingOut.current = false;
+      return;
+    }
+    if (address && !user && !isAuthenticating && !isLoggingOut.current) {
       authenticate();
     }
   }, [isConnected, address, user, isAuthenticating, authenticate]);
 
   const buyArtwork = useCallback(
     async (id: string) => {
-      // Simulate delay
-      await new Promise((r) => setTimeout(r, 2000));
+      if (!wallet || !token) throw new Error("Wallet not connected");
+      await buyArtworkApi(id, wallet, token);
 
       setArtworks((prev) =>
         prev.map((a) => {
@@ -242,7 +253,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         }),
       );
     },
-    [wallet],
+    [wallet, token],
   );
 
   const listArtwork = useCallback(

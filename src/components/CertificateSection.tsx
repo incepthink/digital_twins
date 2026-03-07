@@ -1,13 +1,12 @@
-import { Artwork } from "@/data/artworks";
+import { ArtworkDetailResponse } from "@/lib/api/artworks";
 
 type Props = {
-  artwork: Artwork;
+  artwork: ArtworkDetailResponse;
   isOwner: boolean;
 };
 
 const CertificateSection = ({ artwork, isOwner }: Props) => {
-  if (artwork.listing_type !== "physical_certificate" || !artwork.certificate) return null;
-  const cert = artwork.certificate;
+  if (artwork.listing_type !== "physical_certificate" || !artwork.cert_title) return null;
 
   return (
     <div className="space-y-3">
@@ -21,28 +20,28 @@ const CertificateSection = ({ artwork, isOwner }: Props) => {
         </div>
 
         <div className="relative space-y-3">
-          <h4 className="font-heading text-lg font-semibold">{cert.title}</h4>
+          <h4 className="font-heading text-lg font-semibold">{artwork.cert_title}</h4>
           <div className="gold-divider" />
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary">Artist</p>
-              <p className="font-mono text-xs mt-0.5">{cert.artist.slice(0, 10)}…</p>
+              <p className="font-mono text-xs mt-0.5">{artwork.cert_artist?.slice(0, 10)}…</p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary">Year</p>
-              <p className="mt-0.5">{cert.year}</p>
+              <p className="mt-0.5">{artwork.cert_year}</p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary">Dimensions</p>
-              <p className="mt-0.5">{cert.dimensions}</p>
+              <p className="mt-0.5">{artwork.cert_dimensions}</p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary">Medium</p>
-              <p className="mt-0.5">{cert.medium}</p>
+              <p className="mt-0.5">{artwork.cert_medium}</p>
             </div>
           </div>
           <div className="gold-divider" />
-          <p className="text-sm text-text-secondary">{cert.description}</p>
+          <p className="text-sm text-text-secondary">{artwork.cert_description}</p>
           <p className="text-[10px] text-text-secondary/70 italic mt-4">
             This certificate is issued as an NFT on Ethereum Sepolia and is permanently linked to the physical artwork
           </p>

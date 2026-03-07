@@ -1,4 +1,4 @@
-const UPLOAD_BASE = "https://admin.hashcase.co";
+import { axiosInstance } from "../utils";
 
 type UploadImageResponse = {
   success: boolean;
@@ -10,21 +10,20 @@ export async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await fetch(`${UPLOAD_BASE}/api/upload-image`, {
-    method: "POST",
-    body: formData,
-  });
+  try {
+    const { data } = await axiosInstance.post<UploadImageResponse>(
+      "/user/upload/image",
+      formData,
+    );
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    throw new Error(body?.message || `Image upload failed (${response.status})`);
+    if (!data.success || !data.imageUrl) {
+      throw new Error("Image upload returned an unexpected response");
+    }
+
+    return data.imageUrl;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || error.message || "Image upload failed";
+    throw new Error(message);
   }
-
-  const data: UploadImageResponse = await response.json();
-
-  if (!data.success || !data.imageUrl) {
-    throw new Error("Image upload returned an unexpected response");
-  }
-
-  return data.imageUrl;
 }

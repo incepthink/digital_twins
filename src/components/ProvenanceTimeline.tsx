@@ -1,7 +1,7 @@
-import { Artwork } from "@/data/artworks";
+import { ArtworkDetailResponse } from "@/lib/api/artworks";
 import { truncateWallet, formatPrice } from "@/lib/format";
 
-const ProvenanceTimeline = ({ artwork }: { artwork: Artwork }) => {
+const ProvenanceTimeline = ({ artwork }: { artwork: ArtworkDetailResponse }) => {
   const { sale_history, artist_wallet, listing_type } = artwork;
 
   const showProvenance = ["digital_nft", "physical_nft_unlockable", "physical_certificate"].includes(listing_type);

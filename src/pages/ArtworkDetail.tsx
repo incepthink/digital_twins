@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useApp } from "@/context/AppContext";
 import { LISTING_TYPE_LABELS, LISTING_TYPE_COLORS } from "@/data/artworks";
@@ -9,25 +9,35 @@ import CertificateSection from "@/components/CertificateSection";
 import ProvenanceTimeline from "@/components/ProvenanceTimeline";
 import CardPaymentModal from "@/components/CardPaymentModal";
 import ListForSaleModal from "@/components/ListForSaleModal";
+import { getArtworkById, ArtworkDetailResponse } from "@/lib/api/artworks";
 
 const ArtworkDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const {
-    artworks,
-    wallet,
-    isConnected,
-    connectWallet,
-    buyArtwork,
-    listArtwork,
-  } = useApp();
-  const artwork = artworks.find((a) => a.id === id);
+  const { wallet, isConnected, connectWallet, buyArtwork, listArtwork, token } =
+    useApp();
+
+  const [artwork, setArtwork] = useState<ArtworkDetailResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log(token);
+
+    if (!id) return;
+    setLoading(true);
+    getArtworkById(id, token)
+      .then(setArtwork)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [id, token]);
 
   const [buying, setBuying] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [cardLoading, setCardLoading] = useState(false);
 
-  const isOwner = isConnected && wallet === artwork?.current_owner_wallet;
+  const isOwner =
+    isConnected && wallet === artwork?.current_owner.eth_wallet_address;
 
   const handleBuy = useCallback(async () => {
     if (!artwork) return;
@@ -47,6 +57,33 @@ const ArtworkDetail = () => {
     setCardLoading(false);
     setShowCardModal(false);
   }, [artwork, buyArtwork]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="flex items-center justify-center py-32">
+          <span className="w-6 h-6 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-32 animate-fade-in">
+          <p className="font-heading text-2xl text-text-secondary mb-4">
+            {error}
+          </p>
+          <Link to="/" className="text-sm text-accent hover:underline">
+            Return to gallery
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!artwork) {
     return (
@@ -118,7 +155,7 @@ const ArtworkDetail = () => {
             </p>
 
             <p className="font-heading text-3xl">
-              {formatPrice(artwork.price, artwork.currency)}
+              {formatPrice(Number(artwork.price), artwork.currency)}
             </p>
 
             {/* Action button */}
@@ -131,10 +168,11 @@ const ArtworkDetail = () => {
               </button>
             ) : isOwner ? (
               <button
+                disabled={artwork.is_listed}
                 onClick={() => setShowListModal(true)}
                 className="w-full py-3 border border-accent/40 rounded text-sm hover:border-accent hover:bg-accent/5 transition-all duration-500"
               >
-                List for Sale
+                {artwork.is_listed ? "Listed for Sale" : "List for Sale"}
               </button>
             ) : (
               <button
@@ -176,7 +214,7 @@ const ArtworkDetail = () => {
 
       {showListModal && (
         <ListForSaleModal
-          currentPrice={artwork.price}
+          currentPrice={Number(artwork.price)}
           currency={artwork.currency}
           onSubmit={(price, isListed) => {
             listArtwork(artwork.id, price, isListed);

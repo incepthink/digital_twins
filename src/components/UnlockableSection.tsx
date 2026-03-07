@@ -1,8 +1,8 @@
-import { Artwork } from "@/data/artworks";
+import { ArtworkDetailResponse } from "@/lib/api/artworks";
 import { Lock, Download } from "lucide-react";
 
 type Props = {
-  artwork: Artwork;
+  artwork: ArtworkDetailResponse;
   isOwner: boolean;
 };
 
