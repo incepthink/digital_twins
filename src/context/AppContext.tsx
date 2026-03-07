@@ -247,7 +247,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
           return {
             ...a,
             current_owner_wallet: wallet,
-            is_listed: false,
+            is_listed: true,
             sale_history: [...a.sale_history, entry],
           };
         }),
