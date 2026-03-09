@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/examples/digital-twins/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/examples/digital-twins/:path*", "destination": "/index.html" },
+    { "source": "/examples/digital-twins", "destination": "/index.html" }
+  ]
 }

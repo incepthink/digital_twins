@@ -11,6 +11,7 @@ import { AppProvider } from "@/context/AppContext";
 import Marketplace from "./pages/Marketplace";
 import ArtworkDetail from "./pages/ArtworkDetail";
 import CreateListing from "./pages/CreateListing";
+import YourArtwork from "./pages/YourArtwork";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,11 +24,12 @@ const App = () => (
           <AppProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter basename="/examples/digital-twins">
               <Routes>
                 <Route path="/" element={<Marketplace />} />
                 <Route path="/artwork/:id" element={<ArtworkDetail />} />
                 <Route path="/list" element={<CreateListing />} />
+                <Route path="/my-artworks" element={<YourArtwork />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

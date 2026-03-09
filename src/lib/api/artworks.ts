@@ -1,5 +1,5 @@
 import { Artwork, ListingType } from "@/data/artworks";
-import { Currency } from "@/lib/utils";
+import { Currency, axiosInstance } from "@/lib/utils";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -102,6 +102,29 @@ type PlatformArtwork = {
   createdAt: string;
   current_owner: { eth_wallet_address: string };
 };
+
+export async function getUserArtworks(wallet: string): Promise<Artwork[]> {
+  const res = await axiosInstance.get("/user/artwork", {
+    params: { artist_wallet: wallet },
+  });
+  return (res.data.data as PlatformArtwork[]).map((a) => ({
+    id: a.id,
+    title: a.title,
+    description: a.description ?? "",
+    artist_wallet: a.artist_wallet,
+    price: parseFloat(a.price),
+    currency: a.currency as "ETH" | "USD",
+    cover_image_url: a.cover_image_url,
+    listing_type: a.listing_type,
+    unlockable_content_url: a.unlockable_content_url ?? "",
+    nft_contract_address: a.nft_contract_address,
+    nft_token_id: a.nft_token_id,
+    is_listed: a.is_listed,
+    current_owner_wallet: a.current_owner.eth_wallet_address,
+    created_at: a.createdAt,
+    sale_history: [],
+  }));
+}
 
 export async function getPlatformArtworks(): Promise<Artwork[]> {
   const response = await fetch(`${API_BASE}/platform/artwork`);

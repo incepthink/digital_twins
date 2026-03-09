@@ -18,6 +18,15 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {isConnected && (
             <Link
+              to="/my-artworks"
+              className="text-sm text-text-secondary hover:text-foreground transition-colors duration-500"
+            >
+              Your Artworks
+            </Link>
+          )}
+
+          {isConnected && (
+            <Link
               to="/list"
               className="text-sm text-text-secondary hover:text-foreground transition-colors duration-500"
             >
