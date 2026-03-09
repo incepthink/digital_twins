@@ -29,7 +29,7 @@ const ProvenanceTimeline = ({
               <div className="absolute -left-6 top-1 w-3 h-3 rounded-full border-2 border-accent bg-gallery-surface" />
               <div className="space-y-1">
                 <p className="text-xs text-text-secondary">
-                  {i === 0 && entry.seller_wallet === artist_wallet
+                  {i === sale_history.length - 1 && entry.seller_wallet === artist_wallet
                     ? "Artist"
                     : entry.date}
                 </p>

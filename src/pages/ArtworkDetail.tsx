@@ -188,13 +188,23 @@ const ArtworkDetail = () => {
               {artwork.title}
             </h1>
 
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-text-secondary mb-0.5">
-                Artist
-              </p>
-              <p className="font-mono text-sm text-accent">
-                {truncateWallet(artwork.artist_wallet)}
-              </p>
+            <div className="flex gap-8">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-text-secondary mb-0.5">
+                  Artist
+                </p>
+                <p className="font-mono text-sm text-accent">
+                  {truncateWallet(artwork.artist_wallet)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-text-secondary mb-0.5">
+                  Current Owner
+                </p>
+                <p className="font-mono text-sm text-accent">
+                  {truncateWallet(artwork.current_owner.eth_wallet_address)}
+                </p>
+              </div>
             </div>
 
             <div className="gold-divider" />
