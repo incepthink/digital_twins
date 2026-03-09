@@ -47,7 +47,8 @@ const CreateListing = () => {
     null,
   );
   const [unlockableFile, setUnlockableFile] = useState<File | null>(null);
-  const [dimensions, setDimensions] = useState("");
+  const [dimHeight, setDimHeight] = useState("");
+  const [dimWidth, setDimWidth] = useState("");
   const [medium, setMedium] = useState("");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [submitting, setSubmitting] = useState(false);
@@ -56,11 +57,10 @@ const CreateListing = () => {
   const coverRef = useRef<HTMLInputElement>(null);
   const unlockableRef = useRef<HTMLInputElement>(null);
 
-  const isNFTType =
-    listingType === "physical_nft_unlockable" ||
-    listingType === "digital_nft" ||
-    listingType === "physical_certificate";
-  const currency = isNFTType ? ("ETH" as const) : ("USD" as const);
+  const [currency, setCurrency] = useState<"ETH" | "USD">("USD");
+
+  const dimensions =
+    dimHeight && dimWidth ? `${dimHeight}cm X ${dimWidth}cm` : "";
 
   const handleImageSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -138,11 +138,10 @@ const CreateListing = () => {
       coverPreview,
       unlockablePreview,
       listingType,
-      dimensions,
+      dimHeight,
+      dimWidth,
       medium,
       year,
-
-      isNFTType,
       wallet,
       token,
       coverFile,
@@ -328,12 +327,24 @@ const CreateListing = () => {
                   <label className="text-[10px] uppercase tracking-widest text-text-secondary block mb-1">
                     Dimensions
                   </label>
-                  <input
-                    value={dimensions}
-                    onChange={(e) => setDimensions(e.target.value)}
-                    className="w-full px-3 py-2 bg-transparent border-b border-input focus:border-accent outline-none text-sm transition-colors"
-                    placeholder="30cm × 40cm"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={dimHeight}
+                      onChange={(e) => setDimHeight(e.target.value)}
+                      className="w-full px-3 py-2 bg-transparent border-b border-input focus:border-accent outline-none text-sm transition-colors"
+                      placeholder="Height"
+                    />
+                    <span className="text-text-secondary text-sm shrink-0">cm X</span>
+                    <input
+                      type="number"
+                      value={dimWidth}
+                      onChange={(e) => setDimWidth(e.target.value)}
+                      className="w-full px-3 py-2 bg-transparent border-b border-input focus:border-accent outline-none text-sm transition-colors"
+                      placeholder="Width"
+                    />
+                    <span className="text-text-secondary text-sm shrink-0">cm</span>
+                  </div>
                 </div>
                 <div>
                   <label className="text-[10px] uppercase tracking-widest text-text-secondary block mb-1">
@@ -372,9 +383,25 @@ const CreateListing = () => {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               required
-              className="w-full px-3 py-2 bg-transparent border-b border-input focus:border-accent outline-none text-lg font-heading transition-colors duration-500"
+              className="w-full px-3 py-2 bg-transparent border-b border-input focus:border-accent outline-none text-3xl font-heading transition-colors duration-500"
               placeholder={currency === "ETH" ? "0.00" : "0"}
             />
+            <div className="flex gap-2 mt-3">
+              {(["USD", "ETH"] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCurrency(c)}
+                  className={`px-4 py-1 rounded-full text-xs border transition-all duration-300 ${
+                    currency === c
+                      ? "border-accent bg-accent/10 text-accent"
+                      : "border-input text-text-secondary hover:border-accent/40"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Submit */}
@@ -383,11 +410,7 @@ const CreateListing = () => {
             disabled={submitting}
             className="w-full py-3 border-2 border-accent rounded text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-all duration-500 disabled:opacity-50"
           >
-            {submitting ? (
-              <span className="skeleton-warm inline-block w-full h-5 rounded" />
-            ) : (
-              "List Artwork"
-            )}
+            {submitting ? "This might take a while..." : "List Artwork"}
           </button>
         </form>
       </main>

@@ -6,18 +6,18 @@ import Navbar from "@/components/Navbar";
 import MasonryGrid from "@/components/MasonryGrid";
 
 const YourArtwork = () => {
-  const { wallet } = useApp();
+  const { wallet, user } = useApp();
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!wallet) return;
-    getUserArtworks(wallet)
+    if (!wallet || !user) return;
+    getUserArtworks(wallet, user.id)
       .then(setArtworks)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [wallet]);
+  }, [wallet, user]);
 
   return (
     <div className="min-h-screen">

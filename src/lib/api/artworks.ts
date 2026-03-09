@@ -103,9 +103,9 @@ type PlatformArtwork = {
   current_owner: { eth_wallet_address: string };
 };
 
-export async function getUserArtworks(wallet: string): Promise<Artwork[]> {
+export async function getUserArtworks(wallet: string, userId: string): Promise<Artwork[]> {
   const res = await axiosInstance.get("/user/artwork", {
-    params: { artist_wallet: wallet },
+    params: { artist_wallet: wallet, user_id: userId },
   });
   return (res.data.data as PlatformArtwork[]).map((a) => ({
     id: a.id,
@@ -163,6 +163,27 @@ export async function buyArtwork(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ artwork_id, buyer_wallet }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(
+      body?.message || `Request failed with status ${response.status}`,
+    );
+  }
+}
+
+export async function updateListing(
+  id: string,
+  payload: { is_listed: boolean; price: number },
+  token: string,
+): Promise<void> {
+  const response = await fetch(`${API_BASE}/user/artwork/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

@@ -11,7 +11,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { Artwork, initialArtworks, SaleHistoryEntry } from "@/data/artworks";
-import { buyArtwork as buyArtworkApi } from "@/lib/api/artworks";
+import { buyArtwork as buyArtworkApi, updateListing } from "@/lib/api/artworks";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -37,7 +37,7 @@ type AppContextType = {
   authenticate: () => Promise<void>;
   logout: () => void;
   buyArtwork: (id: string) => Promise<void>;
-  listArtwork: (id: string, price: number, isListed: boolean) => void;
+  listArtwork: (id: string, price: number, isListed: boolean) => Promise<void>;
   addArtwork: (
     artwork: Omit<
       Artwork,
@@ -110,6 +110,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       // 400 = wallet already authenticated — server returns user directly
       if (tokenResponse.status === 400) {
         const body = await tokenResponse.json();
+        console.log(body);
+
         if (body?.userInstance) {
           const u = body.userInstance;
           setUserState({
@@ -226,7 +228,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const buyArtwork = useCallback(
     async (id: string) => {
-      if (!wallet || !token) throw new Error("Wallet not connected");
+      if (!wallet) throw new Error("Wallet not connected");
       await buyArtworkApi(id, wallet, token);
 
       setArtworks((prev) =>
@@ -257,14 +259,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const listArtwork = useCallback(
-    (id: string, price: number, isListed: boolean) => {
+    async (id: string, price: number, isListed: boolean) => {
+      await updateListing(id, { is_listed: isListed, price }, token);
       setArtworks((prev) =>
         prev.map((a) =>
           a.id === id ? { ...a, price, is_listed: isListed } : a,
         ),
       );
     },
-    [],
+    [token],
   );
 
   const addArtwork = useCallback(

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Check } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { LISTING_TYPE_LABELS, LISTING_TYPE_COLORS } from "@/data/artworks";
 import { truncateWallet, formatPrice } from "@/lib/format";
@@ -32,6 +33,9 @@ const ArtworkDetail = () => {
   }, [id, token]);
 
   const [buying, setBuying] = useState(false);
+  const [buySuccess, setBuySuccess] = useState(false);
+  const [listSuccess, setListSuccess] = useState(false);
+  const [listing, setListing] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [cardLoading, setCardLoading] = useState(false);
@@ -48,6 +52,7 @@ const ArtworkDetail = () => {
     setBuying(true);
     await buyArtwork(artwork.id);
     setBuying(false);
+    setBuySuccess(true);
   }, [artwork, buyArtwork]);
 
   const handleCardPay = useCallback(async () => {
@@ -56,6 +61,7 @@ const ArtworkDetail = () => {
     await buyArtwork(artwork.id);
     setCardLoading(false);
     setShowCardModal(false);
+    setBuySuccess(true);
   }, [artwork, buyArtwork]);
 
   if (loading) {
@@ -79,6 +85,49 @@ const ArtworkDetail = () => {
           </p>
           <Link to="/" className="text-sm text-accent hover:underline">
             Return to gallery
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (listSuccess) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-32 animate-fade-in text-center">
+          <div className="w-16 h-16 rounded-full border-2 border-accent flex items-center justify-center mb-6">
+            <Check className="w-8 h-8 text-accent" />
+          </div>
+          <h2 className="font-heading text-3xl mb-2">Artwork Listed</h2>
+          <p className="text-sm text-text-secondary mb-6">
+            Your artwork is now visible on the marketplace
+          </p>
+          <Link to={`/`} className="text-sm text-accent hover:underline">
+            View on Marketplace →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (buySuccess) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="flex flex-col items-center justify-center py-32 animate-fade-in text-center">
+          <div className="w-16 h-16 rounded-full border-2 border-accent flex items-center justify-center mb-6">
+            <Check className="w-8 h-8 text-accent" />
+          </div>
+          <h2 className="font-heading text-3xl mb-2">Purchase Successful</h2>
+          <p className="text-sm text-text-secondary mb-6">
+            The artwork is now yours
+          </p>
+          <Link
+            to="/my-artworks"
+            className="text-sm text-accent hover:underline"
+          >
+            Your Artworks →
           </Link>
         </div>
       </div>
@@ -216,9 +265,15 @@ const ArtworkDetail = () => {
         <ListForSaleModal
           currentPrice={Number(artwork.price)}
           currency={artwork.currency}
-          onSubmit={(price, isListed) => {
-            listArtwork(artwork.id, price, isListed);
-            setShowListModal(false);
+          onSubmit={async (price, isListed) => {
+            setListing(true);
+            try {
+              await listArtwork(artwork.id, price, isListed);
+              setShowListModal(false);
+              setListSuccess(true);
+            } finally {
+              setListing(false);
+            }
           }}
           onClose={() => setShowListModal(false)}
         />
