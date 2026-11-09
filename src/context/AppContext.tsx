@@ -13,7 +13,7 @@ import Cookies from "js-cookie";
 import { Artwork, initialArtworks, SaleHistoryEntry } from "@/data/artworks";
 import { buyArtwork as buyArtworkApi, updateListing } from "@/lib/api/artworks";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_HASHCASE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 type User = {
   id: string;

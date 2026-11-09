@@ -1,7 +1,7 @@
 import { Artwork, ListingType } from "@/data/artworks";
 import { Currency, axiosInstance } from "@/lib/utils";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_HASHCASE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 export type UploadArtworkPayload = {
   title: string;
